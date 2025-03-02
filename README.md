@@ -7,7 +7,7 @@ a simple url shortner built with php
 - you can see url click count
 - acces code is strictly required to generate shorten-url
 - support multiple acces code
-**IF** you need more functions, you are welcome to pull request or contact me on [telegram](https://t.me/kyrofur) or email me at [david@kr.md](emailto:david@kr.md)
+<br>**IF** you need more functions, you are welcome to pull request or contact me on [telegram](https://t.me/kyrofur) or email me at [david@kr.md](emailto:david@kr.md)
 
 ###### Environments
  - `php 8.1`
