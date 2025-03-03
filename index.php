@@ -2,8 +2,11 @@
 session_start();
 $databaseFile = 'database.txt';
 
-function generateShortPath($length) {
-    return str_pad(rand(0, pow(10, $length) - 1), $length, "0", STR_PAD_LEFT);
+function generateShortPath($length, $existingPaths) {
+    do {
+        $shortPath = '/' . str_pad(rand(0, pow(10, $length) - 1), $length, "0", STR_PAD_LEFT);
+    } while (in_array($shortPath, $existingPaths)); 
+    return $shortPath;
 }
 
 function getUserIP() { // cf real ip incase u use cf proxy
@@ -24,7 +27,7 @@ if (preg_match('/^\d{4,5}$/', $requestUri)) {
             if ($index === 0) continue;
             list($fullUrl, $shortPath, $createdTime, $usedAccessCode, $ipUsed, $clickCount) = explode('|', $line);
             if (trim($shortPath, '/') === $requestUri) {
-
+               
                 $clickCount++;
                 $database[$index] = "$fullUrl|$shortPath|$createdTime|$usedAccessCode|$ipUsed|$clickCount";
                 file_put_contents($databaseFile, implode("\n", $database));
@@ -44,9 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accessCode = trim($_POST['accesscode']);
     $clientIP = getUserIP();
     $createdTime = time();
-    $shortPath = '/' . generateShortPath($pathLength);
 
-    // txt db is really gud (bushi
+    // prevent collapse
+    $existingPaths = [];
     $database = file_exists($databaseFile) ? file($databaseFile, FILE_IGNORE_NEW_LINES) : [];
     $validAccessCodes = explode(',', trim($database[0] ?? ''));
 
@@ -55,19 +58,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    foreach ($database as $index => $line) {
+        if ($index === 0) continue;
+        $parts = explode('|', $line);
+        if (count($parts) >= 2) {
+            $existingPaths[] = trim($parts[1]);
+        }
+    }
+
+    $shortPath = generateShortPath($pathLength, $existingPaths);
+
+    // txt is the best db
     $entry = "$fullUrl|$shortPath|$createdTime|$accessCode|$clientIP|0";
     file_put_contents($databaseFile, "$entry\n", FILE_APPEND);
-    echo "Shortened URL: <a href='https://fur.hk$shortPath'>https://fur.hk$shortPath</a>"; // change domain
+    echo "Shortened URL: <a href='https://fur.hk$shortPath'>https://fur.hk$shortPath</a>"; // change required
     exit;
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>fur</title> <!--change title to other cuz i know you are not furry (or are you?)-->
+    <title>donthatefurry</title> <!--change title to other cuz i know you are not furry (or are you?)-->
 </head>
 <body>
-    <h2>a basic url shorter</h2>
+    <h2>url shorter</h2>
     <form method="post">
         fullurl <input type="text" name="fullurl" required><br>
         path_length <select name="path_length">
@@ -78,6 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="submit" value="Shorten">
     </form>
     <br>
-    <a href="dash.php">GitHub</a>
+    <a href="https://github.com/iamblueming/urlshortner">GitHub</a>
 </body>
 </html>
