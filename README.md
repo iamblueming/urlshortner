@@ -25,7 +25,7 @@ location / {
         try_files $uri /index.php?$query_string;
 }
 
-ocation ~ \.php$ {
+location ~ \.php$ {
         include fastcgi_params;
         fastcgi_pass unix:/run/php/php8.0-fpm.sock; # Update PHP version as needed
         fastcgi_index index.php;
