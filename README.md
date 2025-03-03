@@ -12,7 +12,7 @@ a simple url shortner built with php
 ###### Environments
  - `php 8.1`
  - `nginx 1.21.4`
-but im pretty sure you can use any version of these
+<br>but im pretty sure you can use any version of these
 
 ###### Installation
 
