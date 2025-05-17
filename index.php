@@ -19,27 +19,28 @@ function getUserIP() { // cf real ip incase u use cf proxy
     }
 }
 
-$requestUri = trim($_SERVER['REQUEST_URI'], '/');
-if (preg_match('/^\d{4,5}$/', $requestUri)) {
-    if (file_exists($databaseFile)) {
-        $database = file($databaseFile, FILE_IGNORE_NEW_LINES);
-        foreach ($database as $index => $line) {
-            if ($index === 0) continue;
-            list($fullUrl, $shortPath, $createdTime, $usedAccessCode, $ipUsed, $clickCount) = explode('|', $line);
-            if (trim($shortPath, '/') === $requestUri) {
-               
-                $clickCount++;
-                $database[$index] = "$fullUrl|$shortPath|$createdTime|$usedAccessCode|$ipUsed|$clickCount";
-                file_put_contents($databaseFile, implode("\n", $database));
-                header("Location: $fullUrl", true, 302);
-                exit;
-            }
+// actually you can use any path like /dhf
+$requestUri = $_SERVER['REQUEST_URI'];
+$requestPath = parse_url($requestUri, PHP_URL_PATH); // handles ?params cleanly
+
+if ($requestPath !== '/' && file_exists($databaseFile)) {
+    $database = file($databaseFile, FILE_IGNORE_NEW_LINES);
+    foreach ($database as $index => $line) {
+        if ($index === 0) continue;
+        list($fullUrl, $shortPath, $createdTime, $usedAccessCode, $ipUsed, $clickCount) = explode('|', $line);
+        if ($shortPath === $requestPath) {
+            $clickCount++;
+            $database[$index] = "$fullUrl|$shortPath|$createdTime|$usedAccessCode|$ipUsed|$clickCount";
+            file_put_contents($databaseFile, implode("\n", $database));
+            header("Location: $fullUrl", true, 302);
+            exit;
         }
     }
     http_response_code(404);
     echo "Shortened URL not found.";
     exit;
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullUrl = trim($_POST['fullurl']);
